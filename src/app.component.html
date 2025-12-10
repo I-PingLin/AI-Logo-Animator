@@ -1,0 +1,188 @@
+<main class="min-h-screen p-4 sm:p-6 lg:p-8 bg-slate-900 text-slate-200">
+  <div class="max-w-7xl mx-auto">
+    
+    <!-- Header -->
+    <header class="text-center mb-8">
+      <h1 class="text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
+        AI Logo Animator
+      </h1>
+      <p class="mt-2 text-lg text-slate-400">Design and animate your brand's identity in seconds.</p>
+    </header>
+
+    @if (error()) {
+      <div class="bg-red-900/50 border border-red-700 text-red-300 px-4 py-3 rounded-lg relative mb-6" role="alert">
+        <strong class="font-bold">Error: </strong>
+        <span class="block sm:inline">{{ error() }}</span>
+        <span class="absolute top-0 bottom-0 right-0 px-4 py-3">
+          <svg (click)="error.set(null)" class="fill-current h-6 w-6 text-red-400 hover:text-red-200 cursor-pointer" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/></svg>
+        </span>
+      </div>
+    }
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+      <!-- Left Column: Controls -->
+      <div class="bg-slate-800/50 rounded-lg p-6 border border-slate-700">
+        <!-- Step 1: Image Source -->
+        <section class="mb-8">
+          <h2 class="text-2xl font-bold mb-4 flex items-center">
+            <span class="bg-purple-500 text-white rounded-full h-8 w-8 text-lg flex items-center justify-center mr-3">1</span>
+            Get an Image
+          </h2>
+          
+          <div class="flex border-b border-slate-600 mb-4">
+            <button (click)="selectTab('generate')" 
+                    [class]="activeTab() === 'generate' ? 'border-purple-400 text-purple-300' : 'border-transparent text-slate-400 hover:text-white'"
+                    class="py-2 px-4 font-semibold border-b-2 transition-colors duration-200">
+              Generate Logo
+            </button>
+            <button (click)="selectTab('upload')" 
+                    [class]="activeTab() === 'upload' ? 'border-purple-400 text-purple-300' : 'border-transparent text-slate-400 hover:text-white'"
+                    class="py-2 px-4 font-semibold border-b-2 transition-colors duration-200">
+              Upload Image
+            </button>
+          </div>
+
+          @if (activeTab() === 'generate') {
+            <div>
+              <label for="logo-prompt" class="block text-sm font-medium text-slate-300 mb-2">Describe your logo</label>
+              <textarea id="logo-prompt" [value]="logoPrompt()" (input)="logoPrompt.set($any($event.target).value)" rows="4" class="w-full bg-slate-900 border border-slate-600 rounded-md p-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"></textarea>
+
+              <label class="block text-sm font-medium text-slate-300 mt-4 mb-2">Image Quality</label>
+              <div class="flex space-x-2">
+                @for (size of ['1K', '2K', '4K']; track size) {
+                  <button (click)="imageSize.set(size)"
+                          [class]="imageSize() === size ? 'bg-purple-600 text-white' : 'bg-slate-700 hover:bg-slate-600'"
+                          class="px-4 py-2 rounded-md text-sm font-semibold transition-colors duration-200">
+                    {{size}}
+                  </button>
+                }
+              </div>
+
+              <button (click)="generateLogo()" [disabled]="isGeneratingLogo()" class="mt-6 w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-3 px-4 rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity duration-200 flex items-center justify-center">
+                @if (isGeneratingLogo()) {
+                  <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Generating...</span>
+                } @else {
+                  <span>Generate Logo</span>
+                }
+              </button>
+            </div>
+          } @else if (activeTab() === 'upload') {
+            <div>
+              <label for="file-upload" class="relative cursor-pointer bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold text-purple-300 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-offset-slate-900 focus-within:ring-purple-500 transition-colors duration-200">
+                <div class="flex justify-center items-center border-2 border-dashed border-slate-500 rounded-lg p-6">
+                  <svg class="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 48 48" aria-hidden="true"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                  <div class="ml-4 text-sm text-slate-400">
+                    <p class="font-semibold text-purple-300">
+                      @if (!uploadedFileName()) {
+                        <span>Click to upload a file</span>
+                      } @else {
+                        <span>{{ uploadedFileName() }}</span>
+                      }
+                    </p>
+                    <p>PNG, JPG, GIF up to 10MB</p>
+                  </div>
+                </div>
+                <input id="file-upload" name="file-upload" type="file" class="sr-only" (change)="onFileSelected($event)" accept="image/*">
+              </label>
+            </div>
+          }
+        </section>
+
+        <!-- Step 2: Animate -->
+        @if (imageToDisplayUrl()) {
+          <section>
+            <h2 class="text-2xl font-bold mb-4 flex items-center">
+              <span class="bg-pink-500 text-white rounded-full h-8 w-8 text-lg flex items-center justify-center mr-3">2</span>
+              Animate Your Image
+            </h2>
+
+            <label for="animation-prompt" class="block text-sm font-medium text-slate-300 mb-2">Describe the animation</label>
+            <textarea id="animation-prompt" [value]="animationPrompt()" (input)="animationPrompt.set($any($event.target).value)" rows="3" class="w-full bg-slate-900 border border-slate-600 rounded-md p-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"></textarea>
+
+            <label class="block text-sm font-medium text-slate-300 mt-4 mb-2">Aspect Ratio</label>
+            <div class="flex space-x-2">
+              <button (click)="aspectRatio.set('16:9')"
+                      [class]="aspectRatio() === '16:9' ? 'bg-pink-600 text-white' : 'bg-slate-700 hover:bg-slate-600'"
+                      class="px-4 py-2 rounded-md text-sm font-semibold transition-colors duration-200">
+                16:9 Landscape
+              </button>
+              <button (click)="aspectRatio.set('9:16')"
+                      [class]="aspectRatio() === '9:16' ? 'bg-pink-600 text-white' : 'bg-slate-700 hover:bg-slate-600'"
+                      class="px-4 py-2 rounded-md text-sm font-semibold transition-colors duration-200">
+                9:16 Portrait
+              </button>
+            </div>
+
+            <button (click)="animateLogo()" [disabled]="isAnimating()" class="mt-6 w-full bg-gradient-to-r from-pink-600 to-orange-500 text-white font-bold py-3 px-4 rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity duration-200 flex items-center justify-center">
+              @if (isAnimating()) {
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Animating...</span>
+              } @else {
+                <span>Animate It!</span>
+              }
+            </button>
+          </section>
+        }
+      </div>
+
+      <!-- Right Column: Preview -->
+      <div class="bg-slate-800/50 rounded-lg p-6 border border-slate-700 flex flex-col items-center justify-center min-h-[400px]">
+        <h2 class="text-2xl font-bold mb-4 flex items-center self-start">
+          <span class="bg-orange-500 text-white rounded-full h-8 w-8 text-lg flex items-center justify-center mr-3">3</span>
+          See the Magic
+        </h2>
+
+        <div class="w-full flex-grow flex flex-col items-center justify-center p-4 bg-slate-900/50 rounded-md border border-slate-700">
+          @if (isGeneratingLogo()) {
+            <div class="text-center">
+              <svg class="animate-spin-slow mx-auto h-12 w-12 text-purple-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v2m0 16v2m8.07-17.07l-1.42 1.42M5.35 18.65l-1.42 1.42m17.07 0l-1.42-1.42M5.35 5.35L3.93 3.93m0 17.07l1.42-1.42M18.65 5.35l1.42-1.42"></path>
+              </svg>
+              <p class="mt-4 text-slate-400">Generating your logo...</p>
+            </div>
+          } @else if (imageToDisplayUrl()) {
+            <div class="w-full">
+              <img [src]="imageToDisplayUrl()" alt="Generated or uploaded logo" class="max-w-full max-h-64 object-contain mx-auto rounded-lg shadow-lg" />
+              
+              @if (isAnimating()) {
+                <div class="mt-6 text-center">
+                  <svg class="animate-spin mx-auto h-12 w-12 text-pink-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <p class="mt-4 text-slate-300 font-semibold">{{ animationStatus() }}</p>
+                  <p class="text-sm text-slate-400">Video generation can take a few minutes. Please be patient!</p>
+                </div>
+              } @else if (generatedVideoUrl()) {
+                <div class="mt-6 w-full">
+                  <video [src]="generatedVideoUrl()" controls autoplay loop class="w-full rounded-lg shadow-lg border border-slate-600"></video>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="text-center text-slate-500">
+              <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-20 w-20" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M15 8h.01" />
+                <path d="M12.5 21h-6.5a3 3 0 0 1 -3 -3v-12a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v6.5" />
+                <path d="M3 16l5 -5c.928 -.893 2.072 -.893 3 0l3 3" />
+                <path d="M14 14l1 -1c.67 -.644 1.45 -.824 2.182 -.54" />
+                <path d="M19 19m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
+                <path d="M17 21l4 -4" />
+              </svg>
+              <p class="mt-4">Your masterpiece will appear here</p>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
